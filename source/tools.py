@@ -3,6 +3,60 @@ import aiosqlite
 from configparser import ConfigParser
 import datetime
 import discord
+import aiohttp
+
+
+async def delete_webhook_channel_id(channel_id: int):
+    row: list = await view_dat_row(await get_DB_path(), "world_chats", "channel_id", channel_id)
+    row: tuple = row[0]
+    async with aiohttp.ClientSession() as session:
+        async with session.delete(
+                f"{row[2]}",
+                headers={"Content-Type": "application/json"},
+        ) as response:
+            if response.status == 204:
+                print("Webhook delete successful")
+            else:
+                async with session.get(
+                   f"{row[2]}",
+                        headers={"Content-Type": "application/json"},
+                ) as response_check:
+                    if response_check == 404:
+                        print("This webhook doesn't exist!")
+                    else:
+                        print(f"Failed to delete webhook.")
+
+
+async def delete_webhook_id(server_id: int):
+    row: list = await view_dat_row(await get_DB_path(), "world_chats", "id", server_id)
+    row: tuple = row[0]
+    async with aiohttp.ClientSession() as session:
+        async with session.delete(
+                f"{row[2]}",
+                headers={"Content-Type": "application/json"},
+        ) as response:
+            if response.status == 204:
+                print(f"Webhook deleted successfully.")
+            else:
+                print(f"Failed to delete webhook.")
+
+
+async def delete_webhooks():
+    for url in await get_column(await get_DB_path(), "world_chats", "webhook_url"):
+        try:
+            print(f"{url[0]}")
+            async with aiohttp.ClientSession() as session:
+                async with session.delete(
+                        f"{url[0]}",
+                        headers={"Content-Type": "application/json"},
+                ) as response:
+                    if response.status == 204:
+                        print(f"Webhook deleted successfully.")
+                    else:
+                        print(f"Failed to delete webhook.")
+        except Exception as e:
+            print("Well some error, may there be a webhook in db that doesn't exist")
+            pass
 
 
 async def create_embed(server_name: str, author_icon: str, title: str, description: str, icon: str, footer: dict = None,

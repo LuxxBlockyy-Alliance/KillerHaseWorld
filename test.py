@@ -10,7 +10,7 @@ data = {
 
 
 async def main():
-    await tools.create_table(await tools.get_DB_path(), "world_chats", "id, channel_id, webhook_url, guild_id")
+    await tools.create_table(await tools.get_DB_path(), "world_chats", "id, channel_id, webhook_url, guild_id, guild_invite")
 
 
 async def test():
@@ -25,7 +25,7 @@ async def g():
 
 
 if __name__ == '__main__':
-    run(main())
+    run(tools.delete_webhook_id(1))
 
 fields = [
     {'name': 'Field 1', 'value': 'This is the first field'},

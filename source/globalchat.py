@@ -1,14 +1,10 @@
-import discord
 from discord.ext import commands
-from discord.commands import slash_command
-import asyncpg
 import aiohttp
 from discord import Webhook
 import run
 from source import tools
-from configparser import ConfigParser
-import os
-from urllib.parse import urlparse
+import discord
+import datetime
 
 
 class GlobalChat(commands.Cog):
@@ -78,7 +74,7 @@ class GlobalChat(commands.Cog):
         if isinstance(error, commands.errors.CheckFailure):
             await ctx.send("No Permission, yk yk.")
 
-    @discord.slash_command()
+    @discord.slash_command(description="Füge einen Channel in unsere Datenbank ein")
     async def addglobal(self, ctx, channel: discord.TextChannel):
         print(channel.name)
         # async with self.bot.pool.acquire() as conn:
@@ -91,12 +87,13 @@ class GlobalChat(commands.Cog):
             webhook = await self.get_webhook(channel.id)
             print(webhook)
             try:
+                server_invite = self.bot.create_ivite(channel.guild)
                 print("--")
                 db = await tools.get_DB_path()
                 print("---")
                 id = await tools.get_next_id(db, "world_chats")
-                print(f"db, 'world_chats', {id}, {channel.id}, {webhook}, {ctx.guild.id}")
-                await tools.insert_data(db, "world_chats", id, channel.id, webhook, ctx.guild.id)
+                print(f"db, 'world_chats', {id}, {channel.id}, {webhook}, {ctx.guild.id}, {server_invite}")
+                await tools.insert_data(db, "world_chats", id, channel.id, webhook, ctx.guild.id, server_invite)
                 print("------")
                 await ctx.respond(f"{channel.mention} wurde zum Global Chat hinzugefügt.")
                 print("000000000")
@@ -104,7 +101,7 @@ class GlobalChat(commands.Cog):
                 print("WELL there was a error")
                 print(e.with_traceback(e))
 
-    @discord.slash_command()
+    @discord.slash_command(description="Entferne den Globalchat aus unserer Datenbank.")
     async def removeglobal(self, ctx, channel: discord.TextChannel):
         # async with self.bot.pool.acquire() as conn:
         db = await tools.get_DB_path()
@@ -122,9 +119,22 @@ class GlobalChat(commands.Cog):
         db = await tools.get_DB_path()
         await tools.delete_data(db, "world_chats", f"{channel.id}")
 
-    @discord.slash_command()
+    @discord.slash_command(description="Eine menge Hilfe zum Globalchat :)")
     async def help(self, ctx):
-        await ctx.respond(f"HELP ME I AM IN DANGER")
+        embed = discord.Embed(
+            title="Hilfeee",
+            description="Eine menge Hilfe zum Globalchat :)",
+            color=discord.Colour.red(),
+            timestamp=datetime.datetime.now()
+        )
+        embed.add_field(name="Um einen globalchat hinzuzufügen benutze:", value="```bash\n/addglobal <channel_id>\n```",
+                        inline=False)
+        embed.add_field(name="Um einen globalchat zu entfernen benutze:",
+                        value="```bash\n/removeglobal <channel_id>\n```", inline=False)
+        embed.add_field(name="Um dir das hier anzeigen zu lassen benutze:", value="```bash\n/help\n```", inline=False)
+        embed.add_field(name="Für weitere hilfe tritt unserem Discord bei:", value="https://join.killerhase75.com",
+                        inline=False)
+        await ctx.respond(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -132,7 +142,10 @@ class GlobalChat(commands.Cog):
             try:
                 for channel_id in await tools.get_column(await tools.get_DB_path(), "world_chats", "channel_id"):
                     if int(channel_id[0]) == message.channel.id:
+                        if message.content.contains("https:") or message.content.contains("http:") or message.content.contains("www."):
+                            print("May be an AD!!!")
                         db = await tools.get_DB_path()
+                        server_text = f"[{message.guild.name}"
                         footer = {
                             "icon_url": self.bot.user.avatar,
                             "text": f"Server anzahl: {await run.get_server_count()}"
@@ -140,15 +153,31 @@ class GlobalChat(commands.Cog):
                         fields = [
                             {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
                         ]
-                        print(message.guild.icon)
-                        if message.author.avatar:
-                            await self.send_global_message(message.guild.name, message.guild.icon, message.content,
-                                                           message.author.display_name, message.author.avatar.url, footer,
+                        if message.author.avatar and message.guild.icon:
+                            await self.send_global_message(f"", message.guild.icon, message.content,
+                                                           message.author.display_name, message.author.avatar.url,
+                                                           footer,
                                                            fields, message.author.avatar)
-                        else:
+                        elif message.author.avatar:
+                            await self.send_global_message(message.guild.name,
+                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                           message.content,
+                                                           message.author.display_name, message.author.avatar.url,
+                                                           footer,
+                                                           fields, message.author.avatar)
+                        elif message.guild.icon:
                             await self.send_global_message(message.guild.name, message.guild.icon, message.content,
                                                            message.author.display_name,
-                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer, fields)
+                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                           footer,
+                                                           fields, message.author.avatar)
+                        else:
+                            await self.send_global_message(message.guild.name,
+                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                           message.content,
+                                                           message.author.display_name,
+                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,
+                                                           fields)
                         # await self.send_global_message(message.content, message.author.display_name,
                         # message.author.avatar
                         await message.delete()
