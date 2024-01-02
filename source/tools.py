@@ -189,11 +189,17 @@ async def create_table(database_name, table_name, *columns):
     await conn.close()
 
 
-async def insert_data(database_name, table_name, ident, channel_id, webhook_url, guild_id):
+async def insert_data(database_name, table_name, ident, channel_id, webhook_url: str, guild_id: int, server_invite: discord.Asset):
     conn = await aiosqlite.connect(database_name)
     cursor = await conn.cursor()
-    await cursor.execute(f"INSERT INTO {table_name} (id, channel_id, webhook_url, guild_id) VALUES (?, ?, ?, ?);",
-                         (ident, channel_id, webhook_url, guild_id))
+    if not server_invite:
+        server_invite = "https://world.killerhase75.com"
+    else:
+        server_invite = server_invite.url
+
+    await cursor.execute(f"INSERT INTO {table_name} (id, channel_id, webhook_url, guild_id, guild_invite) VALUES (?, ?, ?, ?, ?)",
+                         (ident, channel_id, webhook_url, guild_id, server_invite))
+    print(4)
     await conn.commit()
     await cursor.close()
     await conn.close()

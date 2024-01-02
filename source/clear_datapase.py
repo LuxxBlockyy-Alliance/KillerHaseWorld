@@ -1,26 +1,24 @@
+import aiosqlite
 import asyncio
 import os
 import random
 import shutil
 import sqlite3
+import time
 
-import aiosqlite
-
-
-## Countdown here:
 class Countdown:
     def __init__(self):
         self.start_time = None
         self.end_time = None
 
     def count_start(self):
-        self.start_time = asyncio.get_event_loop().time()
+        self.start_time = time.time()
 
     def count_stop(self):
-        self.end_time = asyncio.get_event_loop().time()
+        self.end_time = time.time()
 
     def counted_time(self):
-        return self.end_time - self.start_time  #
+        return self.end_time - self.start_time
 
 
 async def clean_up_database(database_name: str, table_name: str, partition: int, num_splits: int):
@@ -55,10 +53,7 @@ async def clean_up_database(database_name: str, table_name: str, partition: int,
         os.rename(temp_database_name, database_name)
     finally:
         if os.path.exists(temp_database_name):
-            print("G")
             os.remove(temp_database_name)
-            print(1)
-            countdown.count_stop()
             print(f"Counted time: {countdown.counted_time()} seconds")
 
 
@@ -74,12 +69,6 @@ async def parallel_clean_up_database(database_name: str, table_name: str, num_sp
 async def main():
     await parallel_clean_up_database('example_database.db', 'rows', 4)
 
-
-###
-
-# Erstellen einer Debug Datanbank
-
-###
 
 def create_example_database(filename):
     conn = sqlite3.connect(filename)
@@ -109,21 +98,8 @@ def delete_random_rows(filename, number_of_rows_to_delete):
 
 
 if __name__ == '__main__':
-    print("")
-    print("Janosch Göttlicher Performance Test")
-    print("Hier werden die wahren Sekunden auf die Länge gesetzt!")
-    print("Ja Lukas, 3 Minuten sind auch lang...")
-    print("")
-    print("1. Full Test")
-    print("2. Database refill")
-    print("3. Await finden")
-    print("")
-    gui = int(input("Modus: "))
-    if gui == 1:
-        create_example_database("example_database.db")
-        delete_random_rows("example_database.db", 20)
-        countdown = Countdown()
-        countdown.count_start()
-        asyncio.run(main())
-    else:
-        print("NIMM DOCH EINFACH NUMMER 1")
+    create_example_database("example_database.db")
+    delete_random_rows("example_database.db", 20)
+    countdown = Countdown()
+    countdown.count_start()
+    asyncio.run(main())

@@ -1,6 +1,6 @@
 from discord.ext import commands
 import aiohttp
-from discord import Webhook
+from discord import Webhook, NotFound
 import run
 from source import tools
 import discord
@@ -87,18 +87,33 @@ class GlobalChat(commands.Cog):
             webhook = await self.get_webhook(channel.id)
             print(webhook)
             try:
-                server_invite = self.bot.create_ivite(channel.guild)
-                print("--")
+                print("1")
+                try:
+                    server_invite = await channel.create_invite(
+                        reason="Globalchat Invite Link",
+                        max_age=0,
+                        max_uses=0
+                    )
+                    print(2)
+                    print(f"{server_invite}")
+                    print(3)
+                except Exception as e:
+                    print(f"ERR: {e}")
+                    server_invite = None
+                    print(f"ERR 2")
+                    print(f"ERR 3")
+                    pass
                 db = await tools.get_DB_path()
-                print("---")
-                id = await tools.get_next_id(db, "world_chats")
-                print(f"db, 'world_chats', {id}, {channel.id}, {webhook}, {ctx.guild.id}, {server_invite}")
-                await tools.insert_data(db, "world_chats", id, channel.id, webhook, ctx.guild.id, server_invite)
-                print("------")
+                ident = await tools.get_next_id(db, "world_chats")
+                print(f"db, 'world_chats', {ident}, {channel.id}, {webhook}, {ctx.guild.id}, {server_invite}")
+                await tools.insert_data(db, "world_chats", ident, channel.id, webhook, ctx.guild.id, server_invite)
                 await ctx.respond(f"{channel.mention} wurde zum Global Chat hinzugefügt.")
-                print("000000000")
             except Exception as e:
-                print("WELL there was a error")
+                try:
+                    await ctx.respond(f"Janosch hat das await vergessen, oder was anderes Kaputt gemacht!")
+                except:
+                    pass
+                print(f"WELL there was a error: {e}")
                 print(e.with_traceback(e))
 
     @discord.slash_command(description="Entferne den Globalchat aus unserer Datenbank.")
@@ -118,6 +133,22 @@ class GlobalChat(commands.Cog):
     async def on_guild_channel_delete(self, channel):
         db = await tools.get_DB_path()
         await tools.delete_data(db, "world_chats", f"{channel.id}")
+
+    @commands.Cog.listener()
+    async def on_raw_webhook_update(self, payload):
+        # Ignore the event if the webhook was not deleted
+        if payload.data["type"] != 1:
+            return
+
+        # Retrieve the guild object from the cache
+        guild = self.bot.get_guild(payload.guild_id)
+
+        # Check if the webhook was deleted
+        try:
+            webhook = await guild.fetch_webhook(payload.webhook_id)
+        except NotFound:
+            # If a NotFound error is raised, it means the webhook was deleted
+            print(f"Webhook with ID {payload.webhook_id} was deleted")
 
     @discord.slash_command(description="Eine menge Hilfe zum Globalchat :)")
     async def help(self, ctx):
@@ -142,10 +173,9 @@ class GlobalChat(commands.Cog):
             try:
                 for channel_id in await tools.get_column(await tools.get_DB_path(), "world_chats", "channel_id"):
                     if int(channel_id[0]) == message.channel.id:
-                        if message.content.contains("https:") or message.content.contains("http:") or message.content.contains("www."):
-                            print("May be an AD!!!")
                         db = await tools.get_DB_path()
                         server_text = f"[{message.guild.name}"
+                        print(message.guild.name)
                         footer = {
                             "icon_url": self.bot.user.avatar,
                             "text": f"Server anzahl: {await run.get_server_count()}"
@@ -154,7 +184,7 @@ class GlobalChat(commands.Cog):
                             {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
                         ]
                         if message.author.avatar and message.guild.icon:
-                            await self.send_global_message(f"", message.guild.icon, message.content,
+                            await self.send_global_message(message.guild.name, message.guild.icon, message.content,
                                                            message.author.display_name, message.author.avatar.url,
                                                            footer,
                                                            fields, message.author.avatar)
