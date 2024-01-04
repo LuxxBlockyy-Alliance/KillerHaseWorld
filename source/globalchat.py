@@ -33,9 +33,9 @@ class GlobalChat(commands.Cog):
             if not channel:
                 return None
             webhooks = await channel.webhooks()
-            webhook = discord.utils.get(webhooks, name="GlobalChat")
+            webhook = discord.utils.get(webhooks, name="WorldChat")
             if not webhook:
-                webhook = await channel.create_webhook(name="GlobalChat")
+                webhook = await channel.create_webhook(name="WorldChat")
                 return webhook.url
                 # async with aiohttp.ClientSession() as session:
                 #    async with session.get("https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png") as resp:
@@ -248,6 +248,7 @@ class GlobalChat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+
         if not message.author.bot:
             try:
                 for channel_id in await tools.get_column(await tools.get_DB_path(), "world_chats", "channel_id"):
@@ -266,28 +267,61 @@ class GlobalChat(commands.Cog):
                         if server_invite:
                             server_invite = server_invite[0]
                         if message.author.avatar and message.guild.icon:
-                            await self.send_global_message(message.guild.name, message.guild.icon,
-                                                           f"{server_invite[0]}", message.content,
-                                                           message.author.display_name, message.author.avatar.url,
-                                                           footer,
-                                                           fields, message.author.avatar)
+                            if await tools.check_url(message.content):
+                                await self.send_global_message(message.guild.name, message.guild.icon,
+                                                               f"{server_invite[0]}", "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               message.author.display_name, message.author.avatar.url,
+                                                               footer,
+                                                               fields, message.author.avatar)
+                            else:
+                                await self.send_global_message(message.guild.name, message.guild.icon,
+                                                               f"{server_invite[0]}", message.content,
+                                                               message.author.display_name, message.author.avatar.url,
+                                                               footer,
+                                                               fields, message.author.avatar)
                         elif message.author.avatar:
-                            await self.send_global_message(message.guild.name,
-                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
-                                                           f"{server_invite[0]}",
-                                                           message.content,
-                                                           message.author.display_name, message.author.avatar.url,
-                                                           footer,
-                                                           fields, message.author.avatar)
+                            if await tools.check_url(message.content):
+                                await self.send_global_message(message.guild.name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               f"{server_invite[0]}",
+                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               message.author.display_name, message.author.avatar.url,
+                                                               footer,
+                                                               fields, message.author.avatar)
+                            else:
+                                await self.send_global_message(message.guild.name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               f"{server_invite[0]}",
+                                                               message.content,
+                                                               message.author.display_name, message.author.avatar.url,
+                                                               footer,
+                                                               fields, message.author.avatar)
                         elif message.guild.icon:
-                            await self.send_global_message(message.guild.name, message.guild.icon,
+                            if await tools.check_url(message.content):
+                                await self.send_global_message(message.guild.name, message.guild.icon,
+                                                               f"{server_invite[0]}", "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               message.author.display_name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               footer,
+                                                               fields, message.author.avatar)
+                            else:
+                                await self.send_global_message(message.guild.name, message.guild.icon,
                                                            f"{server_invite[0]}", message.content,
                                                            message.author.display_name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                            footer,
                                                            fields, message.author.avatar)
                         else:
-                            await self.send_global_message(message.guild.name,
+                            if await tools.check_url(message.content):
+                                await self.send_global_message(message.guild.name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               f"{server_invite[0]}",
+                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               message.author.display_name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,
+                                                               fields)
+                            else:
+                                await self.send_global_message(message.guild.name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                            f"{server_invite[0]}",
                                                            message.content,

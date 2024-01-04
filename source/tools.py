@@ -4,6 +4,7 @@ from configparser import ConfigParser
 import datetime
 import discord
 import aiohttp
+import re
 
 
 async def delete_webhook_channel_id(channel_id: int):
@@ -292,3 +293,13 @@ async def execute_script(database_name, script):
     await conn.commit()
     await cursor.close()
     await conn.close()
+
+
+async def check_url(input_str):
+    pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+    pattern2 = re.compile(r'^www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+    if pattern.match(input_str) or pattern2.match(input_str):
+        return True
+    else:
+        return False
+
