@@ -12,12 +12,14 @@ class GlobalChat(commands.Cog):
         self.bot = bot
         self.webhook_session = aiohttp.ClientSession()
 
-    async def send_global_message(self, server_name: str, author_icon: str, message: str, author: str, avatar_url: str,
+    async def send_global_message(self, server_name: str, author_icon: str, author_url: str, message: str, author: str,
+                                  avatar_url: str,
                                   footer: dict, fields: list, thumbnail_url: str = None):
         for url in await tools.get_column("./source/world.db", "world_chats", "webhook_url"):
             try:
                 webhook = Webhook.from_url(str(url), session=self.webhook_session)
-                e = await tools.create_embed(server_name, author_icon, author, message, avatar_url, footer, fields,
+                e = await tools.create_embed(server_name, author_icon, author_url, author, message, avatar_url, footer,
+                                             fields,
                                              thumbnail_url)
                 a = e.copy()
                 await webhook.send(embed=e, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
@@ -27,21 +29,13 @@ class GlobalChat(commands.Cog):
 
     async def get_webhook(self, channel_id):
         try:
-            print(1)
             channel = self.bot.get_channel(channel_id)
-            print(2)
             if not channel:
-                print("NO channel")
                 return None
-            print(3)
             webhooks = await channel.webhooks()
-            print(4)
             webhook = discord.utils.get(webhooks, name="GlobalChat")
-            print(5)
             if not webhook:
-                print("Webhook existiert nicht")
                 webhook = await channel.create_webhook(name="GlobalChat")
-                print(webhook.url)
                 return webhook.url
                 # async with aiohttp.ClientSession() as session:
                 #    async with session.get("https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png") as resp:
@@ -76,38 +70,37 @@ class GlobalChat(commands.Cog):
 
     @discord.slash_command(description="Füge einen Channel in unsere Datenbank ein")
     async def addglobal(self, ctx, channel: discord.TextChannel):
-        print(channel.name)
         # async with self.bot.pool.acquire() as conn:
         if await tools.view_dat_row(await tools.get_DB_path(), "world_chats", "channel_id", channel.id):
-            print("1")
-            await ctx.respond(
-                f"{channel.mention} ist bereits ein global chat zum entfernen benutze /removeglobal <channel>")
+            embed = discord.Embed(
+                title="⚠️ Fehler ⚠️",
+                description="Der Channel ist bereits eingetragen!",
+                color=discord.Colour.red(),
+                timestamp=datetime.datetime.now()
+            )
+            await ctx.respond(embed=embed)
         else:
-            print("-")
             webhook = await self.get_webhook(channel.id)
-            print(webhook)
             try:
-                print("1")
                 try:
                     server_invite = await channel.create_invite(
                         reason="Globalchat Invite Link",
                         max_age=0,
                         max_uses=0
                     )
-                    print(2)
-                    print(f"{server_invite}")
-                    print(3)
                 except Exception as e:
                     print(f"ERR: {e}")
-                    server_invite = None
-                    print(f"ERR 2")
-                    print(f"ERR 3")
                     pass
                 db = await tools.get_DB_path()
                 ident = await tools.get_next_id(db, "world_chats")
-                print(f"db, 'world_chats', {ident}, {channel.id}, {webhook}, {ctx.guild.id}, {server_invite}")
                 await tools.insert_data(db, "world_chats", ident, channel.id, webhook, ctx.guild.id, server_invite)
-                await ctx.respond(f"{channel.mention} wurde zum Global Chat hinzugefügt.")
+                embed = discord.Embed(
+                    title="Willkommen!",
+                    description="Der Channel wurde erfolgreich hinzugefügt...",
+                    color=discord.Colour.green(),
+                    timestamp=datetime.datetime.now()
+                )
+                await ctx.respond(embed=embed)
             except Exception as e:
                 try:
                     await ctx.respond(f"Janosch hat das await vergessen, oder was anderes Kaputt gemacht!")
@@ -120,9 +113,37 @@ class GlobalChat(commands.Cog):
     async def removeglobal(self, ctx, channel: discord.TextChannel):
         # async with self.bot.pool.acquire() as conn:
         db = await tools.get_DB_path()
-        await tools.delete_data(db, "world_chats", f"{channel.id}")
-        await self.deletewebhook(channel.id)
-        await ctx.respond(f"{channel.mention} wurde vom Global Chat entfernt.")
+        if await tools.view_dat_row(await tools.get_DB_path(), "world_chats", "channel_id", channel.id):
+            server_invite = await tools.view_data_one(db, "world_chats", "guild_id", channel.guild.id, "guild_invite")
+            await tools.delete_data(db, "world_chats", f"{channel.id}")
+            await self.deletewebhook(channel.id)
+            embed = discord.Embed(
+                title="Ciao!",
+                description="Der Channel wurde erfolgreich entfernt...",
+                color=discord.Colour.red(),
+                timestamp=datetime.datetime.now()
+            )
+            await ctx.respond(embed=embed)
+            footer = {
+                "icon_url": self.bot.user.avatar,
+                "text": f"Server anzahl: {await run.get_server_count()}"
+            }
+            fields = [
+                {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
+            ]
+            try:
+                await self.send_global_message("Ciao!", channel.guild.icon)
+            except Exception as e:
+                print(e)
+
+        else:
+            embed = discord.Embed(
+                title="⚠️ Fehler ⚠️",
+                description="Der Channel ist nicht eingetragen!",
+                color=discord.Colour.red(),
+                timestamp=datetime.datetime.now()
+            )
+            await ctx.respond(embed=embed)
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
@@ -175,7 +196,6 @@ class GlobalChat(commands.Cog):
                     if int(channel_id[0]) == message.channel.id:
                         db = await tools.get_DB_path()
                         server_text = f"[{message.guild.name}"
-                        print(message.guild.name)
                         footer = {
                             "icon_url": self.bot.user.avatar,
                             "text": f"Server anzahl: {await run.get_server_count()}"
@@ -183,20 +203,27 @@ class GlobalChat(commands.Cog):
                         fields = [
                             {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
                         ]
+                        server_invite = await tools.view_data_one(db, "world_chats", "guild_id", message.guild.id,
+                                                                  "guild_invite")
+                        if server_invite:
+                            server_invite = server_invite[0]
                         if message.author.avatar and message.guild.icon:
-                            await self.send_global_message(message.guild.name, message.guild.icon, message.content,
+                            await self.send_global_message(message.guild.name, message.guild.icon,
+                                                           f"{server_invite[0]}", message.content,
                                                            message.author.display_name, message.author.avatar.url,
                                                            footer,
                                                            fields, message.author.avatar)
                         elif message.author.avatar:
                             await self.send_global_message(message.guild.name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                           f"{server_invite[0]}",
                                                            message.content,
                                                            message.author.display_name, message.author.avatar.url,
                                                            footer,
                                                            fields, message.author.avatar)
                         elif message.guild.icon:
-                            await self.send_global_message(message.guild.name, message.guild.icon, message.content,
+                            await self.send_global_message(message.guild.name, message.guild.icon,
+                                                           f"{server_invite[0]}", message.content,
                                                            message.author.display_name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                            footer,
@@ -204,6 +231,7 @@ class GlobalChat(commands.Cog):
                         else:
                             await self.send_global_message(message.guild.name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                           f"{server_invite[0]}",
                                                            message.content,
                                                            message.author.display_name,
                                                            "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,

@@ -15,7 +15,7 @@ async def delete_webhook_channel_id(channel_id: int):
                 headers={"Content-Type": "application/json"},
         ) as response:
             if response.status == 204:
-                print("Webhook delete successful")
+                print("Webhook deleted!")
             else:
                 async with session.get(
                    f"{row[2]}",
@@ -44,7 +44,6 @@ async def delete_webhook_id(server_id: int):
 async def delete_webhooks():
     for url in await get_column(await get_DB_path(), "world_chats", "webhook_url"):
         try:
-            print(f"{url[0]}")
             async with aiohttp.ClientSession() as session:
                 async with session.delete(
                         f"{url[0]}",
@@ -59,21 +58,19 @@ async def delete_webhooks():
             pass
 
 
-async def create_embed(server_name: str, author_icon: str, title: str, description: str, icon: str, footer: dict = None,
+async def create_embed(server_name: str, author_icon: str, author_url: str,title: str, description: str, icon: str, footer: dict = None,
                        fields: list = None, thumbnail_url: str = None):  # create_embed("Stupid Title", "Stupider
     # description", "Nope", filed1_title="")
     embed = discord.Embed(
         title=title,
         description=description,
-        color=discord.Colour.red(),
+        color=0x5643fd,
         timestamp=datetime.datetime.now()
     )
-    print(server_name.split("https"))
-    print(author_icon)
     if thumbnail_url:
         embed.set_thumbnail(url=thumbnail_url)
     # embed.set_author(str(server_name.split("https")), "", str(author_icon))
-    embed.set_author(name=server_name, icon_url=author_icon)
+    embed.set_author(name=server_name, icon_url=author_icon, url=author_url)
     if footer:
         footer_icon = footer.get("icon_url")
         footer_text = footer.get("text")
@@ -199,7 +196,6 @@ async def insert_data(database_name, table_name, ident, channel_id, webhook_url:
 
     await cursor.execute(f"INSERT INTO {table_name} (id, channel_id, webhook_url, guild_id, guild_invite) VALUES (?, ?, ?, ?, ?)",
                          (ident, channel_id, webhook_url, guild_id, server_invite))
-    print(4)
     await conn.commit()
     await cursor.close()
     await conn.close()
@@ -231,6 +227,18 @@ async def view_data(database_name, table_name, column, value):
         return rows
 
 
+async def view_data_one(database_name, table_name, column, value, what):
+    conn = await aiosqlite.connect(database_name)
+    cursor = await conn.cursor()
+    await cursor.execute(f'SELECT {what} FROM {table_name} WHERE {column} = ?', (value,))
+    rows = await cursor.fetchall()
+    await cursor.close()
+    await conn.close()
+    if not rows:
+        return None
+    else:
+        return rows
+
 async def update_data(database_name: str, table_name: str, condition_id: int, new_id: int, channel_id: int,
                       webhook_url: str):
     conn = await aiosqlite.connect(database_name)
@@ -243,34 +251,19 @@ async def update_data(database_name: str, table_name: str, condition_id: int, ne
 
 
 async def get_column(database_name: str, table_name: str, column: str):
-    print(1)
     conn = await aiosqlite.connect(database_name)
-    print(2)
     cursor = await conn.cursor()
-    print(3)
     try:
-        print(4)
         await cursor.execute(f'SELECT {column} FROM {table_name}')
-        print(5)
     except sqlite3.OperationalError:
-        print(4)
         print("Sqlite get column Failed")
-        print(5)
-    print(6)
     data = await cursor.fetchall()
-    print(7)
     await conn.commit()
-    print(8)
     await cursor.close()
-    print(9)
     await conn.close()
-    print(10)
     if not data:
-        print(11)
-        print("There are no channels")
-        print(12)
+        return
     else:
-        print(11)
         return data
 
 
@@ -294,7 +287,7 @@ async def delete_server_data(database_name, table_name, guild_id):
 
 async def execute_script(database_name, script):
     conn = await aiosqlite.connect(database_name)
-    cursor = await conn.cursor()
+    cursor = await conn.cursor() # Ey DU? Spring mal zu mir, guck mal, was ich falsch mache, danke ;D
     await cursor.executescript(script)
     await conn.commit()
     await cursor.close()
