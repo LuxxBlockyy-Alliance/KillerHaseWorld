@@ -101,6 +101,39 @@ class GlobalChat(commands.Cog):
                     timestamp=datetime.datetime.now()
                 )
                 await ctx.respond(embed=embed)
+                footer = {
+                    "icon_url": self.bot.user.avatar,
+                    "text": f"Server anzahl: {await run.get_server_count()}"
+                }
+                footer_icon = footer.get("icon_url")
+                footer_text = footer.get("text")
+                fields = [
+                    {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
+                ]
+                try:
+                    embed = discord.Embed(
+                        title="Herzlich Willkommen ❤️",
+                        description=f"{channel.guild.name} ist uns beigetreten",
+                        color=discord.Colour.green(),
+                        timestamp=datetime.datetime.now()
+                    )
+                    if not channel.guild.icon:
+                        guild_icon = "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png"
+                    else:
+                        guild_icon = channel.guild.icon.url
+                    embed.set_thumbnail(url=guild_icon)
+                    embed.set_author(name=channel.guild.name, icon_url=guild_icon,
+                                     url="https://world.killerhase75.com")
+                    embed.set_footer(text=footer_text, icon_url=footer_icon)
+                    for url in await tools.get_column("./source/world.db", "world_chats", "webhook_url"):
+                        try:
+                            webhook = Webhook.from_url(str(url), session=self.webhook_session)
+                            await webhook.send(embed=embed, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
+                        except discord.NotFound as e:
+                            print("Well some error, may there be a webhook in db that doesn't exist")
+                            pass
+                except Exception as e:
+                    print(e)
             except Exception as e:
                 try:
                     await ctx.respond(f"Janosch hat das await vergessen, oder was anderes Kaputt gemacht!")
@@ -129,25 +162,31 @@ class GlobalChat(commands.Cog):
                 "icon_url": self.bot.user.avatar,
                 "text": f"Server anzahl: {await run.get_server_count()}"
             }
+            footer_icon = footer.get("icon_url")
+            footer_text = footer.get("text")
             fields = [
                 {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
             ]
-            server_invite = await tools.view_data_one(db, "world_chats", "guild_id", channel.guild.id,
-                                                      "guild_invite")
             try:
-                await self.send_global_message("Ciao!", channel.guild.icon)
                 embed = discord.Embed(
-                    title="Ciao",
+                    title="Ciao... 😔",
                     description=f"{channel.guild.name} hat uns leider Verlassen...",
                     color=discord.Colour.red(),
                     timestamp=datetime.datetime.now()
                 )
-                embed.set_thumbnail(url=channel.guild.icon.url[0])
-                embed.set_author(name=channel.guild.name, icon_url=channel.guild.icon.url, url=server_invite)
+                if not channel.guild.icon:
+                    icon_url = "https://i.ibb.co/D96qZq7/KH75-World-Chat.png"
+                else:
+                    icon_url = channel.guild.icon.url
+
+                print(icon_url)
+
+                embed.set_thumbnail(url=icon_url)
+                embed.set_author(name=channel.guild.name, icon_url=icon_url, url="https://world.killerhase75.com")
+                embed.set_footer(text=footer_text, icon_url=footer_icon)
                 for url in await tools.get_column("./source/world.db", "world_chats", "webhook_url"):
                     try:
                         webhook = Webhook.from_url(str(url), session=self.webhook_session)
-
                         await webhook.send(embed=embed, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
                     except discord.NotFound as e:
                         print("Well some error, may there be a webhook in db that doesn't exist")
