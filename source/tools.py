@@ -6,6 +6,20 @@ import discord
 import aiohttp
 import re
 
+import requests
+
+
+async def send_data(message):
+    url = "http://195.62.46.112:3331/api"
+    headers = {'Content-Type': 'application/json'}
+    data = {'message': f'{message.lower()}'}
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f'Error: {response.json()}')
+        return response.status_code
+
 
 async def delete_webhook_channel_id(channel_id: int):
     row: list = await view_dat_row(await get_DB_path(), "world_chats", "channel_id", channel_id)
@@ -19,7 +33,7 @@ async def delete_webhook_channel_id(channel_id: int):
                 print("Webhook deleted!")
             else:
                 async with session.get(
-                   f"{row[2]}",
+                        f"{row[2]}",
                         headers={"Content-Type": "application/json"},
                 ) as response_check:
                     if response_check == 404:
@@ -59,7 +73,8 @@ async def delete_webhooks():
             pass
 
 
-async def create_embed(server_name: str, author_icon: str, author_url: str,title: str, description: str, icon: str, footer: dict = None,
+async def create_embed(server_name: str, author_icon: str, author_url: str, title: str, description: str, icon: str,
+                       footer: dict = None,
                        fields: list = None, thumbnail_url: str = None):  # create_embed("Stupid Title", "Stupider
     # description", "Nope", filed1_title="")
     embed = discord.Embed(
@@ -187,7 +202,8 @@ async def create_table(database_name, table_name, *columns):
     await conn.close()
 
 
-async def insert_data(database_name, table_name, ident, channel_id, webhook_url: str, guild_id: int, server_invite: discord.Asset):
+async def insert_data(database_name, table_name, ident, channel_id, webhook_url: str, guild_id: int,
+                      server_invite: discord.Asset):
     conn = await aiosqlite.connect(database_name)
     cursor = await conn.cursor()
     if not server_invite:
@@ -195,8 +211,9 @@ async def insert_data(database_name, table_name, ident, channel_id, webhook_url:
     else:
         server_invite = server_invite.url
 
-    await cursor.execute(f"INSERT INTO {table_name} (id, channel_id, webhook_url, guild_id, guild_invite) VALUES (?, ?, ?, ?, ?)",
-                         (ident, channel_id, webhook_url, guild_id, server_invite))
+    await cursor.execute(
+        f"INSERT INTO {table_name} (id, channel_id, webhook_url, guild_id, guild_invite) VALUES (?, ?, ?, ?, ?)",
+        (ident, channel_id, webhook_url, guild_id, server_invite))
     await conn.commit()
     await cursor.close()
     await conn.close()
@@ -240,6 +257,7 @@ async def view_data_one(database_name, table_name, column, value, what):
     else:
         return rows
 
+
 async def update_data(database_name: str, table_name: str, condition_id: int, new_id: int, channel_id: int,
                       webhook_url: str):
     conn = await aiosqlite.connect(database_name)
@@ -256,14 +274,14 @@ async def get_column(database_name: str, table_name: str, column: str):
     cursor = await conn.cursor()
     try:
         await cursor.execute(f'SELECT {column} FROM {table_name}')
-    except sqlite3.OperationalError:
+    except aiosqlite.OperationalError:
         print("Sqlite get column Failed")
     data = await cursor.fetchall()
     await conn.commit()
     await cursor.close()
     await conn.close()
     if not data:
-        return
+        return None
     else:
         return data
 
@@ -288,7 +306,7 @@ async def delete_server_data(database_name, table_name, guild_id):
 
 async def execute_script(database_name, script):
     conn = await aiosqlite.connect(database_name)
-    cursor = await conn.cursor() # Ey DU? Spring mal zu mir, guck mal, was ich falsch mache, danke ;D
+    cursor = await conn.cursor()  # Ey DU? Spring mal zu mir, guck mal, was ich falsch mache, danke ;D
     await cursor.executescript(script)
     await conn.commit()
     await cursor.close()
@@ -302,4 +320,3 @@ async def check_url(input_str):
         return True
     else:
         return False
-

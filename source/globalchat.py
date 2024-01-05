@@ -214,20 +214,12 @@ class GlobalChat(commands.Cog):
         await tools.delete_data(db, "world_chats", f"{channel.id}")
 
     @commands.Cog.listener()
-    async def on_raw_webhook_update(self, payload):
-        # Ignore the event if the webhook was not deleted
-        if payload.data["type"] != 1:
-            return
-
-        # Retrieve the guild object from the cache
-        guild = self.bot.get_guild(payload.guild_id)
-
-        # Check if the webhook was deleted
-        try:
-            webhook = await guild.fetch_webhook(payload.webhook_id)
-        except NotFound:
-            # If a NotFound error is raised, it means the webhook was deleted
-            print(f"Webhook with ID {payload.webhook_id} was deleted")
+    async def on_webhooks_update(self, channel):
+        print(channel.webhook.url)
+        if channel.webhook.url in await tools.get_column("./source/world.db", "world_chats", "webhook_url"):
+            await channel.send("The World webhook has been edited or deleted.")
+        else:
+            await channel.send("A webhook has been edited or deleted.")
 
     @discord.slash_command(description="Eine menge Hilfe zum Globalchat :)")
     async def help(self, ctx):
@@ -248,11 +240,20 @@ class GlobalChat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-
         if not message.author.bot:
             try:
                 for channel_id in await tools.get_column(await tools.get_DB_path(), "world_chats", "channel_id"):
                     if int(channel_id[0]) == message.channel.id:
+                        result: dict = await tools.send_data(message.content)
+                        if result.get("result"):
+                            embed = discord.Embed(
+                                title="⚠️ Achtung ⚠️",
+                                description="Diese ausdrucksweise ist hier nicht erlaubt!",
+                                timestamp=datetime.datetime.now(),
+                            )
+                            await message.author.send(embed=embed)
+                            await message.delete()
+                            return
                         db = await tools.get_DB_path()
                         server_text = f"[{message.guild.name}"
                         footer = {
@@ -269,7 +270,9 @@ class GlobalChat(commands.Cog):
                         if message.author.avatar and message.guild.icon:
                             if await tools.check_url(message.content):
                                 await self.send_global_message(message.guild.name, message.guild.icon,
-                                                               f"{server_invite[0]}", "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"{server_invite[0]}",
+                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier "
+                                                               "Klicken ❤️](https://www.paypal.me/blocky287)",
                                                                message.author.display_name, message.author.avatar.url,
                                                                footer,
                                                                fields, message.author.avatar)
@@ -299,18 +302,19 @@ class GlobalChat(commands.Cog):
                         elif message.guild.icon:
                             if await tools.check_url(message.content):
                                 await self.send_global_message(message.guild.name, message.guild.icon,
-                                                               f"{server_invite[0]}", "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"{server_invite[0]}",
+                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
                                                                message.author.display_name,
                                                                "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                                footer,
                                                                fields, message.author.avatar)
                             else:
                                 await self.send_global_message(message.guild.name, message.guild.icon,
-                                                           f"{server_invite[0]}", message.content,
-                                                           message.author.display_name,
-                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
-                                                           footer,
-                                                           fields, message.author.avatar)
+                                                               f"{server_invite[0]}", message.content,
+                                                               message.author.display_name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               footer,
+                                                               fields, message.author.avatar)
                         else:
                             if await tools.check_url(message.content):
                                 await self.send_global_message(message.guild.name,
@@ -322,17 +326,17 @@ class GlobalChat(commands.Cog):
                                                                fields)
                             else:
                                 await self.send_global_message(message.guild.name,
-                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
-                                                           f"{server_invite[0]}",
-                                                           message.content,
-                                                           message.author.display_name,
-                                                           "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,
-                                                           fields)
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
+                                                               f"{server_invite[0]}",
+                                                               message.content,
+                                                               message.author.display_name,
+                                                               "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,
+                                                               fields)
                         # await self.send_global_message(message.content, message.author.display_name,
                         # message.author.avatar
                         await message.delete()
-            except TypeError as e:
-                print("Database get column returned NONE")
+            except Exception as e:
+                print(f"Database get column returned NONE {e}")
 
         pass
 
