@@ -279,10 +279,10 @@ class GlobalChat(commands.Cog):
                             server_invite = server_invite[0]
                         if message.author.avatar and message.guild.icon:
                             if await tools.check_url(message.content):
+                                troll = await tools.troll_url()
                                 await self.send_global_message(message.guild.name, message.guild.icon,
                                                                f"{server_invite[0]}",
-                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier "
-                                                               "Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️]({troll})",
                                                                message.author.display_name, message.author.avatar.url,
                                                                footer,
                                                                fields, message.author.avatar)
@@ -294,10 +294,11 @@ class GlobalChat(commands.Cog):
                                                                fields, message.author.avatar)
                         elif message.author.avatar:
                             if await tools.check_url(message.content):
+                                troll = await tools.troll_url()
                                 await self.send_global_message(message.guild.name,
                                                                "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                                f"{server_invite[0]}",
-                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️]({troll})",
                                                                message.author.display_name, message.author.avatar.url,
                                                                footer,
                                                                fields, message.author.avatar)
@@ -311,9 +312,10 @@ class GlobalChat(commands.Cog):
                                                                fields, message.author.avatar)
                         elif message.guild.icon:
                             if await tools.check_url(message.content):
+                                troll = await tools.troll_url()
                                 await self.send_global_message(message.guild.name, message.guild.icon,
                                                                f"{server_invite[0]}",
-                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️]({troll})",
                                                                message.author.display_name,
                                                                "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                                footer,
@@ -327,10 +329,11 @@ class GlobalChat(commands.Cog):
                                                                fields, message.author.avatar)
                         else:
                             if await tools.check_url(message.content):
+                                troll = await tools.troll_url()
                                 await self.send_global_message(message.guild.name,
                                                                "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png",
                                                                f"{server_invite[0]}",
-                                                               "Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️](https://www.paypal.me/blocky287)",
+                                                               f"Links sind hier nicht erwünscht! Aber: [❤️ Hier Klicken ❤️]({troll})",
                                                                message.author.display_name,
                                                                "https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png", footer,
                                                                fields)

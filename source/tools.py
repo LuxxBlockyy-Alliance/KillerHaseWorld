@@ -8,6 +8,7 @@ import re
 import asyncio
 from collections import defaultdict
 import requests
+import random
 
 
 async def send_data(message):
@@ -321,4 +322,15 @@ async def check_url(input_str):
         return True
     else:
         return False
+
+
+async def troll_url():
+    link = [
+        "https://killerhase75.com",
+        "https://www.paypal.me/blocky287",
+        "https://paypal.me/Gigagamerreal",
+        "https://www.youtube.com/watch?v=xvFZjo5PgG0",
+    ]
+    selected_link = random.choice(link)
+    return selected_link
 
