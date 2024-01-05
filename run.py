@@ -1,7 +1,7 @@
 from asyncio import run
 import discord
 from discord.ext import tasks
-import asyncio # Du stinkst!
+import asyncio # Janosch hat das await vergessen
 import requests
 import os
 from source import tools, globalchat

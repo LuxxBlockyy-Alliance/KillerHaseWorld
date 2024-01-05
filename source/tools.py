@@ -5,7 +5,8 @@ import datetime
 import discord
 import aiohttp
 import re
-
+import asyncio
+from collections import defaultdict
 import requests
 
 
@@ -320,3 +321,4 @@ async def check_url(input_str):
         return True
     else:
         return False
+

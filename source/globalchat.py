@@ -6,6 +6,8 @@ from source import tools
 import discord
 import datetime
 
+cooldown_cache = {}
+
 
 class GlobalChat(commands.Cog):
     def __init__(self, bot):
@@ -213,14 +215,6 @@ class GlobalChat(commands.Cog):
         db = await tools.get_DB_path()
         await tools.delete_data(db, "world_chats", f"{channel.id}")
 
-    @commands.Cog.listener()
-    async def on_webhooks_update(self, channel):
-        print(channel.webhook.url)
-        if channel.webhook.url in await tools.get_column("./source/world.db", "world_chats", "webhook_url"):
-            await channel.send("The World webhook has been edited or deleted.")
-        else:
-            await channel.send("A webhook has been edited or deleted.")
-
     @discord.slash_command(description="Eine menge Hilfe zum Globalchat :)")
     async def help(self, ctx):
         embed = discord.Embed(
@@ -244,6 +238,22 @@ class GlobalChat(commands.Cog):
             try:
                 for channel_id in await tools.get_column(await tools.get_DB_path(), "world_chats", "channel_id"):
                     if int(channel_id[0]) == message.channel.id:
+                        channel = self.bot.get_channel(message.channel.id)
+                        last_message_time = cooldown_cache.get(message.author.id, {}).get(message.channel.id, 0)
+                        current_time = message.created_at.timestamp()
+
+                        if current_time - last_message_time > 3:
+                            cooldown_cache[message.author.id] = cooldown_cache.get(message.author.id, {})
+                            cooldown_cache[message.author.id][message.channel.id] = current_time
+                        else:
+                            embed = discord.Embed(
+                                title="⚠️ Achtung ⚠️",
+                                description="Bitte spam nicht im World-Chat!",
+                                timestamp=datetime.datetime.now(),
+                            )
+                            await message.author.send(embed=embed)
+                            await message.delete()
+                            return
                         result: dict = await tools.send_data(message.content)
                         if result.get("result"):
                             embed = discord.Embed(
