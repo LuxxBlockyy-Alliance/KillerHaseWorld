@@ -13,6 +13,10 @@ class GlobalChat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.webhook_session = aiohttp.ClientSession()
+        self.ids = [
+            "675779525262573589",  # Blockky | Jansch
+            "1112646094179016846"  # Luxx 1112646094179016846
+            ]
 
     async def send_global_message(self, server_name: str, author_icon: str, author_url: str, message: str, author: str,
                                   avatar_url: str,
@@ -270,9 +274,31 @@ class GlobalChat(commands.Cog):
                             "icon_url": self.bot.user.avatar,
                             "text": f"Server anzahl: {await run.get_server_count()}"
                         }
-                        fields = [
-                            {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)', 'inline': True}
-                        ]
+                        if str(message.author.id) == "1112646094179016846":
+                            fields = [
+                                {'name': '', 'value': '‍💻 [Offizieller Entwickler](https://luxx.dev)',
+                                 'inline': False},
+                                {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)',
+                                 'inline': True}
+                            ]
+                        elif str(message.author.id) == "675779525262573589":
+                            fields = [
+                                {'name': '', 'value': '‍💻 [Offizieller Entwickler](https://linktr.ee/b1ockyy)', 'inline': False},
+                                {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)',
+                                    'inline': True}
+                            ]
+                        elif str(message.author.id) == "1147086052805328907":
+                            fields = [
+                                {'name': '', 'value': '🐰 [Der aller echte Killerhase](https://killerhase75.com/)', 'inline': False},
+                                {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)',
+                                    'inline': True}
+                            ]
+                        else:
+                            fields = [
+                                {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)',
+                                 'inline': True}
+                            ]
+
                         server_invite = await tools.view_data_one(db, "world_chats", "guild_id", message.guild.id,
                                                                   "guild_invite")
                         if server_invite:
