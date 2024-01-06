@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NA UH</title>
+    <style>
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255,0,0,0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 20px rgba(255,0,0,0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255,0,0,0);
+            }
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #f1f1f1;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            animation: pulse 2s infinite;
+        }
+        .container {
+            display: inline-block;
+            padding: 20px;
+            border-radius: 50px;
+            background: #ffffff;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Trying to open an API endpoint in a browser is a bad idea!!</h1>
+  </div>
+</body>
+</html>
