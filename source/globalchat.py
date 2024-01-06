@@ -30,7 +30,7 @@ class GlobalChat(commands.Cog):
                 a = e.copy()
                 await webhook.send(embed=e, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
             except discord.NotFound as e:
-                print("Well some error, may there be a webhook in db that doesn't exist")
+                print("Es ist ein Fehler aufgetreten. Möglicherweise gibt es einen Webhook in der Datenbank, der nicht vorhanden ist.")
                 pass
 
     async def get_webhook(self, channel_id):
@@ -43,16 +43,9 @@ class GlobalChat(commands.Cog):
             if not webhook:
                 webhook = await channel.create_webhook(name="WorldChat")
                 return webhook.url
-                # async with aiohttp.ClientSession() as session:
-                #    async with session.get("https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png") as resp:
-                #        if resp.status == 200:
-                #            data = await resp.read()
-                #            webhook = await channel.create_webhook(name="GlobalChat")
-                #        else:
-                #            return None
             return webhook.url
         except Exception as e:
-            print(e.with_traceback(e))
+            print(e)
 
     async def deletewebhook(self, channel_id):
         try:
@@ -272,7 +265,7 @@ class GlobalChat(commands.Cog):
                         server_text = f"[{message.guild.name}"
                         footer = {
                             "icon_url": self.bot.user.avatar,
-                            "text": f"Server anzahl: {await run.get_server_count()}"
+                            "text": f"Aktive Server:{await run.get_server_count()}"
                         }
                         if str(message.author.id) == "1112646094179016846":
                             fields = [

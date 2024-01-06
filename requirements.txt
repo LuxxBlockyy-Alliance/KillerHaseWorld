@@ -3,3 +3,4 @@ requests
 rich
 aiosqlite
 aiohttp
+aiofiles

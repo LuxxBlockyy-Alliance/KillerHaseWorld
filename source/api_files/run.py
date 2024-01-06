@@ -5,7 +5,8 @@ from rich.console import Console
 console = Console()
 app = Flask(__name__, template_folder='website')
 
-@app.route('/access/admin/panel')
+
+@app.route('/')
 async def index():
     return render_template('index.html')
 
