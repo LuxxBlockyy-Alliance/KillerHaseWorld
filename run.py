@@ -1,9 +1,11 @@
 from asyncio import run
 import discord
 from discord.ext import tasks
-import asyncio # Janosch hat das await vergessen
+import asyncio  # Janosch hat das await vergessen
 import requests
 import os
+
+import source.api
 from source import tools, globalchat
 from rich.console import Console
 import sys

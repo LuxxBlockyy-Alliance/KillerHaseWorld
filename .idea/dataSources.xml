@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:sqlite:C:\KillerHaseWorld\source\world.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="world [2]" uuid="b6d205de-9e85-4d80-861d-be3e66d2ce29">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:P:\Phyton\.discordbot\GlobalChat\source\world.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

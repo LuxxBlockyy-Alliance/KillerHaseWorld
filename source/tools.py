@@ -10,6 +10,26 @@ from collections import defaultdict
 import requests
 import random
 
+from discord import Webhook
+
+
+async def send_global_broadcast(message: str):
+    webhook_session = aiohttp.ClientSession()
+    for url in await get_column("../world.db", "world_chats", "webhook_url"):
+        try:
+            webhook = Webhook.from_url(str(url), session=webhook_session)
+            e = discord.Embed(
+                title="🚀 BROADCAST 🚀",
+                description=f"{message}",
+                timestamp=datetime.datetime.now()
+            )
+            e.set_footer(text=" ✅ Dies ist eine offizielle Nachricht ✅")
+            await webhook.send(embed=e, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
+        except discord.NotFound as e:
+            print(
+                "Es ist ein Fehler aufgetreten. Möglicherweise gibt es einen Webhook in der Datenbank, der nicht vorhanden ist.")
+            pass
+
 
 async def send_data(message):
     url = "http://195.62.46.112:3331/api"
@@ -333,4 +353,3 @@ async def troll_url():
     ]
     selected_link = random.choice(link)
     return selected_link
-

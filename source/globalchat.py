@@ -13,10 +13,6 @@ class GlobalChat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.webhook_session = aiohttp.ClientSession()
-        self.ids = [
-            "675779525262573589",  # Blockky | Jansch
-            "1112646094179016846"  # Luxx 1112646094179016846
-            ]
 
     async def send_global_message(self, server_name: str, author_icon: str, author_url: str, message: str, author: str,
                                   avatar_url: str,
@@ -30,7 +26,8 @@ class GlobalChat(commands.Cog):
                 a = e.copy()
                 await webhook.send(embed=e, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
             except discord.NotFound as e:
-                print("Es ist ein Fehler aufgetreten. Möglicherweise gibt es einen Webhook in der Datenbank, der nicht vorhanden ist.")
+                print("Es ist ein Fehler aufgetreten. Möglicherweise gibt es einen Webhook in der Datenbank, "
+                      "der nicht vorhanden ist.")
                 pass
 
     async def get_webhook(self, channel_id):
@@ -255,7 +252,7 @@ class GlobalChat(commands.Cog):
                         if result.get("result"):
                             embed = discord.Embed(
                                 title="⚠️ Achtung ⚠️",
-                                description="Diese ausdrucksweise ist hier nicht erlaubt!",
+                                description="Diese AUSDRUCKSWEISE ist hier nicht erlaubt!",
                                 timestamp=datetime.datetime.now(),
                             )
                             await message.author.send(embed=embed)
