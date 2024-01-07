@@ -21,7 +21,8 @@ async def send_global_broadcast(message: str):
             e = discord.Embed(
                 title="🚀 BROADCAST 🚀",
                 description=f"{message}",
-                timestamp=datetime.datetime.now()
+                timestamp=datetime.datetime.now(),
+                color=discord.Colour.red()
             )
             e.set_footer(text=" ✅ Dies ist eine offizielle Nachricht ✅")
             await webhook.send(embed=e, avatar_url="https://i.ibb.co/D96qZq7/KH75-World-Chat-2.png")
