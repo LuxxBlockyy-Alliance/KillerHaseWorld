@@ -279,7 +279,7 @@ class GlobalChat(commands.Cog):
                             ]
                         elif str(message.author.id) == "1147086052805328907":
                             fields = [
-                                {'name': '', 'value': '🐰 [Der aller echte Killerhase](https://killerhase75.com/)', 'inline': False},
+                                {'name': '', 'value': '🐰 [Der aller Echte KillerHase](https://killerhase75.com/)', 'inline': False},
                                 {'name': '', 'value': '🤖 [Invite mich](https://world.killerhase75.com)',
                                     'inline': True}
                             ]
