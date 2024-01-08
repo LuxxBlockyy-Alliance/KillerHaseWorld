@@ -1,4 +1,6 @@
 import sqlite3
+
+import aiofiles
 import aiosqlite
 from configparser import ConfigParser
 import datetime
@@ -9,8 +11,44 @@ import asyncio
 from collections import defaultdict
 import requests
 import random
-
+from git import Repo, Actor
 from discord import Webhook
+
+
+async def async_copy_large_file(source_file_path, target_file_path,
+                                chunk_size=1024 * 1024):  # default chunk size is 1MB
+    async with aiofiles.open(source_file_path, mode='rb') as source:
+        with open(target_file_path, mode='w') as target:
+            target.write("")
+            target.flush()
+            target.close()
+        async with aiofiles.open(target_file_path, mode='wb') as target:
+            async for chunk in _read_in_chunks(source, chunk_size):
+                await target.write(chunk)
+
+
+async def _read_in_chunks(file_object, chunk_size):
+    while True:
+        data = await file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
+async def backup_database(dp_path: str = './source/world.db'):
+    db_path = dp_path + datetime.datetime.now().strftime('%Y%m%d%H%M%S').__str__()
+    with open(f"{db_path + datetime.datetime.now().strftime('%Y%m%d%H%M%S').__str__()}.db", "w") as f:
+        pass
+    await async_copy_large_file(dp_path, db_path)
+    repo_path = "."
+    repo = Repo(repo_path)
+    actor = Actor("Luxx", "lkgames256@gmail.com")
+    repo.index.add([f"{db_path}"])
+    repo.index.commit(f"Database backup from {datetime.datetime.now().strftime('%Y%m%d%H%M%S')}", author=actor, committer=actor)
+
+    # Push to GitHub
+    origin = repo.remote(name='origin')
+    origin.push()
 
 
 async def send_global_broadcast(message: str):

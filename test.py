@@ -1,4 +1,5 @@
 import datetime
+import time
 from asyncio import run
 from source import tools
 import requests
@@ -25,7 +26,9 @@ async def g():
 
 
 if __name__ == '__main__':
-    run(tools.delete_webhook_id(1))
+    db_path = "./source/world.db"
+    print(db_path)
+    run(tools.backup_database())
 
 fields = [
     {'name': 'Field 1', 'value': 'This is the first field'},
